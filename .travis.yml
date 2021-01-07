@@ -1,0 +1,124 @@
+os: linux
+dist: trusty
+
+services: docker
+
+language: shell
+
+branches:
+  only:
+    - master
+    #- develop
+
+before_install:
+  - env | sort
+  - export TAG=$VERSION-$VARIANT
+  - export VCS_REF=`git rev-parse --short HEAD`
+  - export BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
+  - export src_dir=$(pwd)
+  - export travis_dir="${src_dir}/images/${VERSION}-${BENCH}/${VARIANT}"
+  - export IMAGE_NAME="monogramm/docker-dodock:${TAG}-travis"
+
+install:
+  - echo "Changing to travis test directory ($travis_dir)"
+  - cd "$travis_dir"
+  # Prepare test image for local build version and variant
+  - sed -i -e "s|FROM monogramm/docker-dodock:.*|FROM ${IMAGE_NAME}|g" test/Dockerfile
+  # Test container build
+  - travis_retry docker-compose -f "docker-compose.${DATABASE}.yml" build
+
+before_script:
+  - docker images
+  # Set permissions for persisted volumes
+  - sudo mkdir -p '/srv/dokos/dodock/sites' '/srv/dokos/dodock/logs'
+  - sudo chown 1000:1000 '/srv/dokos/dodock/sites' '/srv/dokos/dodock/logs'
+
+script:
+  - echo "Changing to travis test directory ($travis_dir)"
+  - cd "$travis_dir"
+  # Test container run
+  - travis_retry docker-compose -f "docker-compose.${DATABASE}.yml" up -d
+  - docker-compose -f "docker-compose.${DATABASE}.yml" logs -f "sut"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps
+  - docker-compose -f "docker-compose.${DATABASE}.yml" logs "dodock_db"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps "dodock_db" | grep "Up"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" logs "dodock_app"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps "dodock_app" | grep "Up"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" logs "dodock_web"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps "dodock_web" | grep "Up"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps "sut" | grep "Exit 0"
+  # Test container db reinstall
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" bench reinstall --help
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" bench reinstall --yes && sleep 20
+  # Test container restart
+  - docker-compose -f "docker-compose.${DATABASE}.yml" down
+  - travis_retry docker-compose -f "docker-compose.${DATABASE}.yml" up -d
+  - docker-compose -f "docker-compose.${DATABASE}.yml" logs -f "sut"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps
+  - docker-compose -f "docker-compose.${DATABASE}.yml" logs "dodock_db"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps "dodock_db" | grep "Up"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" logs "dodock_app"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps "dodock_app" | grep "Up"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" logs "dodock_web"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps "dodock_web" | grep "Up"
+  - docker-compose -f "docker-compose.${DATABASE}.yml" ps "sut" | grep "Exit 0"
+  # Test container migrate
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" bench migrate --help
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" migrate
+  # Test container backup
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" bench backup --help
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" backup && sleep 5
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" backup && sleep 5
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" backup && sleep 5
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" backup && sleep 5
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" backup && sleep 5
+  # Test container restore
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" bench restore --help
+  # Test container "old" restore (file number instead of file name)
+  - docker-compose -f "docker-compose.${DATABASE}.yml" run --rm "dodock_app" restore 1
+
+after_script:
+  - echo "Changing to project directory (${src_dir})"
+  - cd "${src_dir}"
+  - sudo pip install coverage==4.5.4
+  - sudo pip install python-coveralls
+  # Create same directory path as docker test execution
+  - sudo mkdir -p '/home/dodock/dodock-bench/apps'
+  - sudo ln -sf "${src_dir}" '/home/dodock/dodock-bench/apps/erpnext_template'
+  # Copy and convert coverage to XML format
+  - cp '/srv/erpnext/dodock/sites/.coverage' .coverage
+  - coverage xml
+  # Publish coverage to Coveralls
+  - coveralls -b "${src_dir}" -d "$home/.coverage"
+  # Publish coverage to Codacy
+  - test -z "$CODACY_PROJECT_TOKEN" || bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l Python -r "./coverage.xml"
+  # Publish coverage to Codecov
+  - test -z "$CODECOV_TOKEN" || bash <(curl -s https://codecov.io/bash)
+
+notifications:
+  email: false
+
+jobs:
+  allow_failures:
+    - env: VERSION=develop BENCH=master VARIANT=alpine3.12 DATABASE=postgres
+    - env: VERSION=develop BENCH=master VARIANT=alpine3.12 DATABASE=mariadb
+    - env: VERSION=develop BENCH=master VARIANT=slim-buster DATABASE=postgres
+    - env: VERSION=develop BENCH=master VARIANT=slim-buster DATABASE=mariadb
+
+env: # Environments
+  - VERSION=develop BENCH=master VARIANT=slim-buster DATABASE=postgres
+  - VERSION=develop BENCH=master VARIANT=slim-buster DATABASE=mariadb
+  - VERSION=develop BENCH=master VARIANT=alpine3.12 DATABASE=postgres
+  - VERSION=develop BENCH=master VARIANT=alpine3.12 DATABASE=mariadb
+  - VERSION=v1.3 BENCH=v1.0.1 VARIANT=slim-buster DATABASE=postgres
+  - VERSION=v1.3 BENCH=v1.0.1 VARIANT=slim-buster DATABASE=mariadb
+  - VERSION=v1.3 BENCH=v1.0.1 VARIANT=alpine3.12 DATABASE=postgres
+  - VERSION=v1.3 BENCH=v1.0.1 VARIANT=alpine3.12 DATABASE=mariadb
+  - VERSION=v1.4 BENCH=v1.0.1 VARIANT=slim-buster DATABASE=postgres
+  - VERSION=v1.4 BENCH=v1.0.1 VARIANT=slim-buster DATABASE=mariadb
+  - VERSION=v1.4 BENCH=v1.0.1 VARIANT=alpine3.12 DATABASE=postgres
+  - VERSION=v1.4 BENCH=v1.0.1 VARIANT=alpine3.12 DATABASE=mariadb
+  - VERSION=v1.5 BENCH=v1.0.1 VARIANT=slim-buster DATABASE=postgres
+  - VERSION=v1.5 BENCH=v1.0.1 VARIANT=slim-buster DATABASE=mariadb
+  - VERSION=v1.5 BENCH=v1.0.1 VARIANT=alpine3.12 DATABASE=postgres
+  - VERSION=v1.5 BENCH=v1.0.1 VARIANT=alpine3.12 DATABASE=mariadb
