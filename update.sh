@@ -73,6 +73,11 @@ for latest in "${latests[@]}"; do
       echo "$latest-$variant $version-$variant " > "$dir/.dockertags"
     fi
 
+    if [ "$variant" = 'slim-buster' ]; then
+      echo "$latest $version " >> "$dir/.dockertags"
+    fi
+
+
     # Add Travis-CI env var
     travisEnv='\n  - VERSION='"$version"' BENCH='"$bench"' VARIANT='"$variant"' DATABASE=mariadb'"$travisEnv"
     travisEnv='\n  - VERSION='"$version"' BENCH='"$bench"' VARIANT='"$variant"' DATABASE=postgres'"$travisEnv"
