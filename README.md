@@ -38,14 +38,17 @@ Full-stack web application framework that uses Python and MariaDB on the server 
 <https://hub.docker.com/r/monogramm/docker-dodock/>
 
 -   Dodock develop branch
-    -   `develop-alpine` `develop`
-    -   `develop-debian`
+    -   `develop-slim-buster` `develop`
+    -   `develop-alpine`
 -   Dodock 1.5
-    -   `1.5-alpine` `1.5.2`
-    -   `1.5-debian`
+    -   `v1.5-slim-buster` `v1.5`
+    -   `v1.5-alpine`
 -   Dodock 1.4
-    -   `1.4-alpine` `1.4.9`
-    -   `1.4-debian`
+    -   `v1.4-slim-buster` `v1.4`
+    -   `v1.4-alpine`
+-   Dodock 1.3
+    -   `v1.3-slim-buster` `v1.3`
+    -   `v1.3-alpine`
 
 # Auto configuration via environment variables
 
