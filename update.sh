@@ -68,14 +68,19 @@ for latest in "${latests[@]}"; do
 
     # Create a list of "alias" tags for DockerHub post_push
     if [ "$latest" = 'develop' ]; then
-      echo "develop-$variant " > "$dir/.dockertags"
+      if [ "$variant" = 'slim-buster' ]; then
+        echo "$latest-$variant $latest " > "$dir/.dockertags"
+      else
+        echo "$latest-$variant " > "$dir/.dockertags"
+      fi
     else
-      echo "$latest-$variant $version-$variant " > "$dir/.dockertags"
+      if [ "$variant" = 'slim-buster' ]; then
+        echo "$latest-$variant $version-$variant $latest $version " > "$dir/.dockertags"
+      else
+        echo "$latest-$variant $version-$variant " > "$dir/.dockertags"
+      fi
     fi
 
-    if [ "$variant" = 'slim-buster' ]; then
-      echo "$latest $version " >> "$dir/.dockertags"
-    fi
 
 
     # Add Travis-CI env var
