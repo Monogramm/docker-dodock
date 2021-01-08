@@ -66,6 +66,11 @@ for latest in "${latests[@]}"; do
       "$dir/docker-compose."*.yml \
       "$dir/.env"
 
+    sed -ri -e '
+      s|DOCKER_TAG=.*|DOCKER_TAG='"$version"'|g;
+      s|DOCKER_REPO=.*|DOCKER_REPO='"$dockerRepo"'|g;
+    ' "$dir/hooks/run"
+
     # Create a list of "alias" tags for DockerHub post_push
     if [ "$latest" = 'develop' ]; then
       if [ "$variant" = 'slim-buster' ]; then
@@ -80,7 +85,6 @@ for latest in "${latests[@]}"; do
         echo "$latest-$variant $version-$variant " > "$dir/.dockertags"
       fi
     fi
-
 
 
     # Add Travis-CI env var
