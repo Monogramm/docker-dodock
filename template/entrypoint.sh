@@ -89,14 +89,26 @@ pip_install() {
 
   cd "${DODOCK_WD}"
   ls apps/ | while read -r file; do
-    if [ "$file" != "frappe" ] && [ -f "apps/$file/setup.py" ]; then
-      pip3 install -q -e "apps/$file" --no-cache-dir \
-        | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.log" 3>&1 1>&2 2>&3 \
-        | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.err.log"
-    fi;
+    if grep -q "^${file}$" "${FRAPPE_WD}/sites/apps.txt"; then
+      pip_install_package "$file"
+    fi
+
   done
 
   log "Apps python packages installed"
+}
+
+pip_install_package() {
+  local package=$1
+  log "Install apps python package '$package'..."
+
+  if [ "$file" != "frappe" ] && [ -f "apps/$file/setup.py" ]; then
+    pip install -q -e "apps/$file" --no-cache-dir \
+      | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.log" 3>&1 1>&2 2>&3 \
+      | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.err.log"
+  fi;
+
+  log "Apps python package '$package' installed"
 }
 
 wait_db() {
@@ -688,6 +700,9 @@ EOF
 else
   # Wait for another node to setup sites
   wait_sites
+
+  # Force pip install for apps
+  pip_install
 fi
 
 
