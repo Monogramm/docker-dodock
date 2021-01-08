@@ -16,21 +16,21 @@ if [ ! -f "./sites/apps.txt" ] || [ ! -f "./sites/.docker-app-init" ] || [ ! -f 
 fi
 
 echo "Checking main containers are reachable..."
-if ! sudo ping -c 10 -q frappe_db ; then
+if ! sudo ping -c 10 -q dodock_db ; then
     echo 'Database container is not responding!'
     echo 'Check the following logs for details:'
     tail -n 100 logs/*.log
     exit 2
 fi
 
-if ! sudo ping -c 10 -q frappe_app ; then
+if ! sudo ping -c 10 -q dodock_app ; then
     echo 'App container is not responding!'
     echo 'Check the following logs for details:'
     tail -n 100 logs/*.log
     exit 4
 fi
 
-if ! sudo ping -c 10 -q frappe_web ; then
+if ! sudo ping -c 10 -q dodock_web ; then
     echo 'Web container is not responding!'
     echo 'Check the following logs for details:'
     tail -n 100 logs/*.log
