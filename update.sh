@@ -66,6 +66,14 @@ for latest in "${latests[@]}"; do
       "$dir/docker-compose."*.yml \
       "$dir/.env"
 
+    # Create a list of "alias" tags for DockerHub post_push
+    if [ "$latest" = 'develop' ]; then
+      echo "develop-$variant " > "$dir/.dockertags"
+    else
+      echo "$latest-$variant $version-$variant " > "$dir/.dockertags"
+    fi
+
+    # Add Travis-CI env var
     travisEnv='\n  - VERSION='"$version"' BENCH='"$bench"' VARIANT='"$variant"' DATABASE=mariadb'"$travisEnv"
     travisEnv='\n  - VERSION='"$version"' BENCH='"$bench"' VARIANT='"$variant"' DATABASE=postgres'"$travisEnv"
 
