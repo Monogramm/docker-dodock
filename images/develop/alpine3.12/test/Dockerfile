@@ -1,6 +1,6 @@
 # For development or CI, build from local Dockerfile (.travis.yml will update base before tests)
 # For production, download prebuilt image
-FROM monogramm/docker-dodock:develop-alpine3.12
+FROM monogramm/docker-dodock:develop
 
 COPY docker_test.sh /docker_test.sh
 
