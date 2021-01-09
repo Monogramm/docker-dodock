@@ -17,7 +17,7 @@
 ##
 FROM python:3.7-slim-buster
 
-ARG VERSION=v1.5.2
+ARG VERSION=v1.5.3
 
 ENV DODOCK_BRANCH=${VERSION} \
     NODE_VERSION=12.18.3 \

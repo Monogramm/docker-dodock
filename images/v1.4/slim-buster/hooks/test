@@ -7,8 +7,6 @@ for file in docker-compose*.test.yml; do
 
     echo "Starting Test in ${file}..."
 
-    ls -al '/srv/dokos/dodock' '/srv/dokos/dodock/sites' '/srv/dokos/dodock/logs'
-
     # Test container run
     docker-compose --no-ansi -f "${file}" up -d && sleep 60
     docker-compose --no-ansi -f "${file}" logs -f "sut"

@@ -53,7 +53,7 @@ reset_logs() {
 }
 
 log() {
-  echo "[${WORKER_TYPE}] [$(date +%Y-%m-%dT%H:%M:%S%:z)] $@" \
+  echo "[${WORKER_TYPE}] [$(date +%Y-%m-%dT%H:%M:%S%:z)] $*" \
     | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.log" 3>&1 1>&2 2>&3 \
     | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.err.log"
 }
@@ -102,8 +102,8 @@ pip_install_package() {
   local package=$1
   log "Install apps python package '$package'..."
 
-  if [ "$file" != "frappe" ] && [ -f "apps/$file/setup.py" ]; then
-    pip install -q -e "apps/$file" --no-cache-dir \
+  if [ "$package" != "frappe" ] && [ -f "apps/$package/setup.py" ]; then
+    pip install -q -e "apps/$package" --no-cache-dir \
       | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.log" 3>&1 1>&2 2>&3 \
       | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.err.log"
   fi;
@@ -128,7 +128,7 @@ wait_apps() {
       log "Waiting apps..."
       sleep "$s"
 
-      i="$(($i+$s))"
+      i="$((i+s))"
       if [ "$i" = "$l" ]; then
           log 'Apps were not set in time!'
           if [[ "${DOCKER_DEBUG}" == "1" ]]; then
@@ -150,7 +150,7 @@ wait_sites() {
       log "Waiting site..."
       sleep "$s"
 
-      i="$(($i+$s))"
+      i="$((i+s))"
       if [ "$i" = "$l" ]; then
           log 'Site was not set in time!'
           if [[ "${DOCKER_DEBUG}" == "1" ]]; then
@@ -172,7 +172,7 @@ wait_container() {
       log "Waiting init..."
       sleep "$s"
 
-      i="$(($i+$s))"
+      i="$((i+s))"
       if [ "$i" = "$l" ]; then
           log 'Container was not initialized in time!'
           if [[ "${DOCKER_DEBUG}" == "1" ]]; then
@@ -262,10 +262,12 @@ bench_setup_database() {
 }
 
 bench_install_apps() {
-  for app in $@; do
+  for app in "$@"; do
     if ! grep -q "^${app}$" "${DODOCK_WD}/sites/apps.txt"; then
       log "Adding '$app' to apps.txt..."
       echo "$app" >> "${DODOCK_WD}/sites/apps.txt"
+
+      pip_install_package "$app"
 
       log "Installing app '$app'..."
       bench install-app "$app" \
@@ -345,11 +347,11 @@ bench_restore() {
   if [ "$#" -eq 0 ]; then
     list_backups
     # Choose file name
-    read -p "Enter the SQL file name which you want to restore: " file
+    read -r -p "Enter the SQL file name which you want to restore: " file
 
     # Allow to set the private and public files archive as well
-    read -p "Enter the public files archive name which you want to restore (or press enter for none): " public
-    read -p "Enter the private files archive name which you want to restore (or press enter for none): " private
+    read -r -p "Enter the public files archive name which you want to restore (or press enter for none): " public
+    read -r -p "Enter the private files archive name which you want to restore (or press enter for none): " private
   else
 
     case ${1} in
@@ -369,7 +371,7 @@ bench_restore() {
           elif [ "$3" = "$i" ]; then
             private=$f
           fi
-          i="$(($i+1))"
+          i="$((i+1))"
         done
         ;;
     esac
@@ -444,10 +446,10 @@ bench_migrate() {
 bench_cmd() {
   module=${DODOCK_WD}/commands/$1.py
   shift
-  if [ -f $module ]; then
-    . ${DODOCK_WD}/env/bin/activate
+  if [ -f "$module" ]; then
+    . "${DODOCK_WD}/env/bin/activate"
     cd "${DODOCK_WD}/sites"
-    python $module "$@"
+    python "$module" "$@"
   else
     return 255
   fi
@@ -524,6 +526,7 @@ if [[ "${DODOCK_RESET_SITES}" == "1" ]]; then
 fi
 
 if [ ! -d "${DODOCK_WD}/sites/assets/frappe" ]; then
+  log "Restoring apps assets to site from archive..."
   (cd "${DODOCK_WD}"
    tar zxf sites-base.tgz)
 fi
@@ -695,7 +698,7 @@ EOF
     | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.log" 3>&1 1>&2 2>&3 \
     | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.err.log"
 
-  echo "$(date +%Y-%m-%dT%H:%M:%S%:z)" > "${DODOCK_WD}/sites/.docker-site-init"
+  date +%Y-%m-%dT%H:%M:%S%:z > "${DODOCK_WD}/sites/.docker-site-init"
   log "Docker Dodock automatic site setup ended"
 else
   # Wait for another node to setup sites
@@ -704,7 +707,6 @@ else
   # Force pip install for apps
   pip_install
 fi
-
 
 
 if [ -n "${DODOCK_APP_INIT}" ]; then
@@ -716,7 +718,7 @@ if [ -n "${DODOCK_APP_INIT}" ]; then
     log "Docker Dodock automatic app setup..."
     bench_setup "${DODOCK_APP_INIT}"
 
-    echo "$(date +%Y-%m-%dT%H:%M:%S%:z)" > "${DODOCK_WD}/sites/.docker-app-init"
+    date +%Y-%m-%dT%H:%M:%S%:z > "${DODOCK_WD}/sites/.docker-app-init"
     log "Docker Dodock automatic app setup ended"
 
   else
@@ -725,7 +727,7 @@ if [ -n "${DODOCK_APP_INIT}" ]; then
     log "Docker Dodock automatic app update..."
     bench_install_apps "${DODOCK_APP_INIT}"
 
-    echo "$(date +%Y-%m-%dT%H:%M:%S%:z)" > "${DODOCK_WD}/sites/.docker-app-init"
+    date +%Y-%m-%dT%H:%M:%S%:z > "${DODOCK_WD}/sites/.docker-app-init"
     log "Docker Dodock automatic app update ended"
 
   fi

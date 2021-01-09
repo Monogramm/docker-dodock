@@ -19,7 +19,7 @@ FROM madnight/alpine-wkhtmltopdf-builder:0.12.5-alpine3.10-745686742 AS wkhtmlto
 
 FROM python:3.7-alpine3.12
 
-ARG VERSION=v1.5.2
+ARG VERSION=v1.5.3
 
 ENV DODOCK_BRANCH=${VERSION} \
     NODE_VERSION=12.18.3 \
