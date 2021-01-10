@@ -89,7 +89,7 @@ pip_install() {
 
   cd "${DODOCK_WD}"
   ls apps/ | while read -r file; do
-    if grep -q "^${file}$" "${FRAPPE_WD}/sites/apps.txt"; then
+    if grep -q "^${file}$" "${DODOCK_WD}/sites/apps.txt"; then
       pip_install_package "$file"
     fi
 
