@@ -17,7 +17,7 @@
 ##
 FROM python:3.7-slim-buster
 
-ARG VERSION=v1.3.13
+ARG VERSION=v1.4.9
 
 ENV DODOCK_BRANCH=${VERSION} \
     NODE_VERSION=12.18.3 \
@@ -129,8 +129,6 @@ RUN set -ex; \
     python -m venv env; \
     mkdir -p config apps logs sites/assets sites/error; \
     cp /home/dodock/.bench/bench/config/templates/502.html sites/error/; \
-    touch logs/bench.log; \
-    echo "frappe" > sites/apps.txt; \
     install_app frappe https://gitlab.com/dokos/dodock ${DODOCK_BRANCH}; \
     (cd apps/frappe && yarn && yarn run production && rm -rf node_modules); \
     (cd apps/frappe && yarn install --production=true && yarn add node-sass); \

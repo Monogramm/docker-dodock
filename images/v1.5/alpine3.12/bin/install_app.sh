@@ -8,6 +8,7 @@ cd /home/dodock/dodock-bench/
 
 . env/bin/activate
 
+echo "${APP_NAME}" > sites/apps.txt
 cd ./apps
 [ "${APP_BRANCH}" ] && BRANCH="-b ${APP_BRANCH}"
 git clone --depth 1 -o upstream ${BRANCH} ${APP_REPO} ${APP_NAME}
