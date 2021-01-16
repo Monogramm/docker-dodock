@@ -16,21 +16,21 @@ if [ ! -f "./sites/apps.txt" ] || [ ! -f "./sites/.docker-app-init" ] || [ ! -f 
 fi
 
 echo "Checking main containers are reachable..."
-if ! sudo ping -c 10 -q dodock_db ; then
+if ! ping -c 10 -q dodock_db ; then
     echo 'Database container is not responding!'
     echo 'Check the following logs for details:'
     tail -n 100 logs/*.log
     exit 2
 fi
 
-if ! sudo ping -c 10 -q dodock_app ; then
+if ! ping -c 10 -q dodock_app ; then
     echo 'App container is not responding!'
     echo 'Check the following logs for details:'
     tail -n 100 logs/*.log
     exit 4
 fi
 
-if ! sudo ping -c 10 -q dodock_web ; then
+if ! ping -c 10 -q dodock_web ; then
     echo 'Web container is not responding!'
     echo 'Check the following logs for details:'
     tail -n 100 logs/*.log
@@ -49,7 +49,7 @@ echo 'Docker tests successful'
 # https://frappe.io/docs/user/en/testing
 ################################################################################
 
-FRAPPE_APP_TO_TEST=frappe
+FRAPPE_APP_TO_TEST=
 
 echo "Preparing Frappe application '${FRAPPE_APP_TO_TEST}' tests..."
 
