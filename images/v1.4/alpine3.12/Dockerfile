@@ -80,9 +80,6 @@ RUN set -ex; \
         ttf-ubuntu-font-family \
         xvfb \
     ; \
-#pip install Cython==0.29.10; \ 0.29.19 provided by Alpine
-#pip install numpy==1.17.4; \ but Collecting numpy>=1.13.3 after
-#pip install pandas==0.24.2; \ but Collecting pandas==0.25.3 after
     wget "https://github.com/jwilder/dockerize/releases/download/v${DOCKERIZE_VERSION}/dockerize-linux-amd64-v${DOCKERIZE_VERSION}.tar.gz"; \
     tar -C /usr/local/bin -xzvf "dockerize-linux-amd64-v${DOCKERIZE_VERSION}.tar.gz"; \
     rm "dockerize-linux-amd64-v${DOCKERIZE_VERSION}.tar.gz"; \
