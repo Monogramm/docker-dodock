@@ -122,6 +122,7 @@ RUN set -ex; \
     mkdir dodock-bench; \
     cd dodock-bench; \
     python -m venv env; \
+    env/bin/pip install numpy==1.18.5; \
     mkdir -p config apps logs sites/assets sites/error; \
     cp /home/dodock/.bench/bench/config/templates/502.html sites/error/; \
     install_app frappe https://gitlab.com/dokos/dodock ${DODOCK_BRANCH}; \
