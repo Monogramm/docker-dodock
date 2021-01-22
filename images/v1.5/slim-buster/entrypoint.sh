@@ -262,7 +262,8 @@ bench_setup_database() {
 }
 
 bench_install_apps() {
-  for app in "$@"; do
+  IFS=',' read -ra APPS <<< "$@"
+  for app in "${APPS[@]}"; do
     if ! grep -q "^${app}$" "${DODOCK_WD}/sites/apps.txt"; then
       log "Adding '$app' to apps.txt..."
       echo "$app" >> "${DODOCK_WD}/sites/apps.txt"
@@ -541,7 +542,7 @@ if [ -n "${DODOCK_APP_INIT}" ]; then
     log "Checking bench apps to remove before init..."
 
     for app in $(cat ${DODOCK_WD}/sites/apps.txt); do
-      if ! echo "${DODOCK_APP_PROTECTED}" | grep -qE "(^| )${app}( |$)" && ! echo "${DODOCK_APP_INIT}" | grep -qE "(^| )${app}( |$)"; then
+      if ! echo "${DODOCK_APP_PROTECTED}" | grep -qE "(^|,)${app}(,|$)" && ! echo "${DODOCK_APP_INIT}" | grep -qE "(^|,)${app}(,|$)"; then
         log "Removing '$app' from bench..."
         bench remove-from-installed-apps "$app" \
           | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.log" 3>&1 1>&2 2>&3 \
