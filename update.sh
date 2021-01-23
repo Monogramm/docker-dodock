@@ -11,6 +11,8 @@ variants=(
   slim-buster
 )
 
+dockerLatest='1.5'
+
 dockerRepo="monogramm/docker-dodock"
 latests=(
   $( curl -fsSL 'https://gitlab.com/dokos/dodock/-/tags' | \
@@ -77,6 +79,12 @@ for latest in "${latests[@]}"; do
         echo "$latest-$variant $latest " > "$dir/.dockertags"
       else
         echo "$latest-$variant " > "$dir/.dockertags"
+      fi
+    elif [ "$version" = "v$dockerLatest" ]; then
+      if [ "$variant" = 'slim-buster' ]; then
+        echo "$latest-$variant $version-$variant $variant $latest $version latest " > "$dir/.dockertags"
+      else
+        echo "$latest-$variant $version-$variant $variant " > "$dir/.dockertags"
       fi
     else
       if [ "$variant" = 'slim-buster' ]; then
