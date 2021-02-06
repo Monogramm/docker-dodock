@@ -3,6 +3,7 @@ version: "2.3"
 volumes:
   dodock_sites:
   dodock_logs:
+  dodock_db:
 
 services:
   # https://docs.docker.com/docker-hub/builds/automated-testing/
@@ -36,8 +37,8 @@ services:
     volumes:
       - dodock_sites:/home/dodock/dodock-bench/sites
       - dodock_logs:/home/dodock/dodock-bench/logs
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      #- /etc/timezone:/etc/timezone:ro
 
   dodock_app:
     # For development or CI, build from local Dockerfile
@@ -48,8 +49,10 @@ services:
     container_name: dodock_app
     restart: on-failure
     command: app
+    expose:
+      - '8000'
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
       dodock_db:
         condition: service_healthy
@@ -106,8 +109,8 @@ services:
     volumes:
       - dodock_sites:/home/dodock/dodock-bench/sites
       - dodock_logs:/home/dodock/dodock-bench/logs
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      #- /etc/timezone:/etc/timezone:ro
 
   dodock_web:
     image: nginx:alpine
@@ -122,9 +125,9 @@ services:
     depends_on:
       - dodock_socketio
     ports:
-      - 8080:80
+      - "8080:80"
       # If you need SSL connection
-      # - 8443:443
+      # - "8443:443"
     links:
       - dodock_app
       - dodock_socketio
@@ -138,6 +141,8 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "--user=${DODOCK_DB_NAME}", "--password=${DODOCK_DB_PWD}"]
       timeout: 10s
       retries: 5
+    expose:
+      - '3306'
     environment:
       - MYSQL_ROOT_PASSWORD=${DODOCK_DB_ROOT_PWD}
       # Following parameters are not needed with Frappe 12 or higher since it will create DB itself
@@ -146,22 +151,9 @@ services:
       - MYSQL_PASSWORD=${DODOCK_DB_PWD}
     volumes:
       - ./mariadb.conf:/etc/dodockdb.cnf:ro
-      - /srv/dokos/db:/var/lib/mysql
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-
-  dodock_mailer:
-    image: sj26/mailcatcher:latest
-    hostname: dodock_mailer
-    container_name: dodock_mailer
-    restart: always
-    expose:
-      - 1025
-    ports:
-      - 1080:1080
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      - dodock_db:/var/lib/mysql
+      #- /etc/localtime:/etc/localtime:ro
+      #- /etc/timezone:/etc/timezone:ro
 
   dodock_scheduler:
     image: ${IMAGE_NAME}
@@ -176,8 +168,8 @@ services:
       - DOCKER_APPS_TIMEOUT=900
     volumes:
       - dodock_sites:/home/dodock/dodock-bench/sites
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      #- /etc/timezone:/etc/timezone:ro
 
   dodock_worker_default:
     image: ${IMAGE_NAME}
@@ -193,8 +185,8 @@ services:
       - DOCKER_APPS_TIMEOUT=900
     volumes:
       - dodock_sites:/home/dodock/dodock-bench/sites
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      #- /etc/timezone:/etc/timezone:ro
 
   dodock_worker_short:
     image: ${IMAGE_NAME}
@@ -210,8 +202,8 @@ services:
       - DOCKER_APPS_TIMEOUT=900
     volumes:
       - dodock_sites:/home/dodock/dodock-bench/sites
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      #- /etc/timezone:/etc/timezone:ro
 
   dodock_worker_long:
     image: ${IMAGE_NAME}
@@ -227,8 +219,8 @@ services:
       - DOCKER_APPS_TIMEOUT=900
     volumes:
       - dodock_sites:/home/dodock/dodock-bench/sites
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      #- /etc/timezone:/etc/timezone:ro
 
   dodock_socketio:
     image: ${IMAGE_NAME}
@@ -236,7 +228,7 @@ services:
     command: node-socketio
     restart: on-failure
     ports:
-      - 3000:3000
+      - "3000:3000"
     depends_on:
       - dodock_redis_socketio
     environment:
@@ -244,8 +236,8 @@ services:
       - DOCKER_APPS_TIMEOUT=900
     volumes:
       - dodock_sites:/home/dodock/dodock-bench/sites
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      #- /etc/timezone:/etc/timezone:ro
 
   dodock_redis_cache:
     image: redis:alpine
@@ -254,21 +246,34 @@ services:
     restart: on-failure
     volumes:
       - ./redis_cache.conf:/etc/conf.d/redis.conf:ro
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      #- /etc/timezone:/etc/timezone:ro
 
   dodock_redis_queue:
     image: redis:alpine
     container_name: dodock_redis_queue
     restart: on-failure
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+    #volumes:
+    #  - /etc/localtime:/etc/localtime:ro
+    #  - /etc/timezone:/etc/timezone:ro
 
   dodock_redis_socketio:
     image: redis:alpine
     container_name: dodock_redis_socketio
     restart: on-failure
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+    #volumes:
+    #  - /etc/localtime:/etc/localtime:ro
+    #  - /etc/timezone:/etc/timezone:ro
+
+  dodock_mailer:
+    image: sj26/mailcatcher:latest
+    hostname: frappe_mailer
+    container_name: frappe_mailer
+    restart: always
+    expose:
+      - 1025
+    ports:
+      - "1080:1080"
+    #volumes:
+    #  - /etc/localtime:/etc/localtime:ro
+    #  - /etc/timezone:/etc/timezone:ro

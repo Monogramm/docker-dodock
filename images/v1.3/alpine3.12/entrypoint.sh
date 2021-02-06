@@ -1,7 +1,7 @@
 #!/bin/bash
 ##
 ##    Docker image for Dodock applications.
-##    Copyright (C) 2020  Monogramm
+##    Copyright (C) 2021 Monogramm
 ##
 ##    This program is free software: you can redistribute it and/or modify
 ##    it under the terms of the GNU Affero General Public License as published
@@ -89,10 +89,14 @@ pip_install() {
 
   cd "${DODOCK_WD}"
   ls apps/ | while read -r file; do
+    # Install python packages of installed or protected frappe apps
     if grep -q "^${file}$" "${DODOCK_WD}/sites/apps.txt"; then
+      log "Install requested app '$file' python packages..."
+      pip_install_package "$file"
+    elif echo "${DODOCK_APP_PROTECTED}" | grep -qE "(^| )${file}( |$)"; then
+      log "Install protected app '$file' python packages..."
       pip_install_package "$file"
     fi
-
   done
 
   log "Apps python packages installed"
@@ -100,7 +104,6 @@ pip_install() {
 
 pip_install_package() {
   local package=$1
-  log "Install apps python package '$package'..."
 
   if [ "$package" != "frappe" ] && [ -f "apps/$package/setup.py" ]; then
     pip install -q -e "apps/$package" --no-cache-dir \
@@ -124,20 +127,21 @@ wait_apps() {
   i=0
   s=10
   l=${DOCKER_APPS_TIMEOUT}
-  while [ ! -f "${DODOCK_WD}/sites/apps.txt" ] || [ ! -f "${DODOCK_WD}/sites/.docker-app-init" ]; do
+  while [ ! -f "${DODOCK_WD}/sites/apps.txt" ] && [ ! -f "${DODOCK_WD}/sites/.docker-app-init" ]; do
       log "Waiting apps..."
       sleep "$s"
 
       i="$((i+s))"
       if [ "$i" = "$l" ]; then
           log 'Apps were not set in time!'
-          if [[ "${DOCKER_DEBUG}" == "1" ]]; then
+          if [[ "${DOCKER_DEBUG}" = "1" ]]; then
             log 'Check the following logs for details:'
             display_logs
           fi
           exit 1
       fi
   done
+  log "Apps were set at $(cat "${DODOCK_WD}/sites/.docker-app-init")"
 }
 
 wait_sites() {
@@ -153,13 +157,14 @@ wait_sites() {
       i="$((i+s))"
       if [ "$i" = "$l" ]; then
           log 'Site was not set in time!'
-          if [[ "${DOCKER_DEBUG}" == "1" ]]; then
+          if [[ "${DOCKER_DEBUG}" = "1" ]]; then
             log 'Check the following logs for details:'
             display_logs
           fi
           exit 1
       fi
   done
+  log "Site was set at $(cat "${DODOCK_WD}/sites/.docker-site-init")"
 }
 
 wait_container() {
@@ -175,13 +180,14 @@ wait_container() {
       i="$((i+s))"
       if [ "$i" = "$l" ]; then
           log 'Container was not initialized in time!'
-          if [[ "${DOCKER_DEBUG}" == "1" ]]; then
+          if [[ "${DOCKER_DEBUG}" = "1" ]]; then
             log 'Check the following logs for details:'
             display_logs
           fi
           exit 1
       fi
   done
+  log "Container was set at $(cat "${DODOCK_WD}/sites/.docker-init")"
 }
 
 bench_doctor() {
@@ -241,19 +247,19 @@ bench_setup_database() {
   if [ "${DB_TYPE}" = "mariadb" ] && [ -n "${DOCKER_DB_ALLOWED_HOSTS}" ]; then
     log "Updating MariaDB users allowed hosts..."
     mysql -h "${DB_HOST}" -P "${DB_PORT}" \
-          -u "${DB_ROOT_USER}" -p${DB_ROOT_PASSWORD} \
+          -u "${DB_ROOT_USER}" "-p${DB_ROOT_PASSWORD}" \
           "${DB_NAME}" \
           -e "UPDATE mysql.user SET host = '${DOCKER_DB_ALLOWED_HOSTS}' WHERE host LIKE '%.%.%.%' AND user != 'root';"
 
     log "Updating MariaDB databases allowed hosts..."
     mysql -h "${DB_HOST}" -P "${DB_PORT}" \
-          -u "${DB_ROOT_USER}" -p${DB_ROOT_PASSWORD} \
+          -u "${DB_ROOT_USER}" "-p${DB_ROOT_PASSWORD}" \
           "${DB_NAME}" \
           -e "UPDATE mysql.db SET host = '${DOCKER_DB_ALLOWED_HOSTS}' WHERE host LIKE '%.%.%.%' AND user != 'root';"
 
     log "Flushing MariaDB privileges..."
     mysql -h "${DB_HOST}" -P "${DB_PORT}" \
-          -u "${DB_ROOT_USER}" -p${DB_ROOT_PASSWORD} \
+          -u "${DB_ROOT_USER}" "-p${DB_ROOT_PASSWORD}" \
           "${DB_NAME}" \
           -e "FLUSH PRIVILEGES;"
   fi
@@ -519,7 +525,7 @@ if [ -f "/before_${WORKER_TYPE}_init.sh" ]; then
   "/before_${WORKER_TYPE}_init.sh"
 fi
 
-if [[ "${DODOCK_RESET_SITES}" == "1" ]]; then
+if [[ "${DODOCK_RESET_SITES}" = "1" ]]; then
   log "Removing all sites!"
   (cd "${DODOCK_WD}"
    rm -rf sites/*
@@ -552,7 +558,7 @@ if [ -n "${DODOCK_APP_INIT}" ]; then
   fi
 
   # Reset apps
-  if [ ! -f "${DODOCK_WD}/sites/apps.txt" ] || [[ "${DODOCK_APP_RESET}" == "1" ]]; then
+  if [ ! -f "${DODOCK_WD}/sites/apps.txt" ] || [[ "${DODOCK_APP_RESET}" = "1" ]]; then
     log "Adding frappe to apps.txt..."
     touch "${DODOCK_WD}/sites/apps.txt"
     sudo chown "dodock:dodock" \
@@ -562,7 +568,7 @@ if [ -n "${DODOCK_APP_INIT}" ]; then
   fi
 
 else
-  # Wait for another node to setup apps and sites
+  log 'Wait for another node to setup apps and sites...'
   wait_sites
   wait_apps
   wait_container
@@ -571,8 +577,13 @@ fi
 
 
 # Dodock automatic site setup
-if [ -n "${DODOCK_DEFAULT_SITE}" ] && [ ! -f "${DODOCK_WD}/sites/.docker-site-init" ]; then
+if [ -z "${DODOCK_DEFAULT_SITE}" ]; then
+  log 'Wait for another node to setup sites...'
+  wait_sites
 
+  log 'Always install pip packages...'
+  pip_install
+elif [ ! -f "${DODOCK_WD}/sites/.docker-site-init" ]; then
   log "Creating default directories for sites/${DODOCK_DEFAULT_SITE}..."
   mkdir -p \
     "${DODOCK_WD}/sites/assets" \
@@ -699,27 +710,21 @@ EOF
     | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.log" 3>&1 1>&2 2>&3 \
     | tee -a "${DODOCK_WD}/logs/${WORKER_TYPE}-docker.err.log"
 
-  date +%Y-%m-%dT%H:%M:%S%:z > "${DODOCK_WD}/sites/.docker-site-init"
+  echo "[${WORKER_TYPE}] $(date +%Y-%m-%dT%H:%M:%S%:z)" > "${DODOCK_WD}/sites/.docker-site-init"
   log "Docker Dodock automatic site setup ended"
-else
-  # Wait for another node to setup sites
-  wait_sites
-
-  # Force pip install for apps
-  pip_install
 fi
 
 
 if [ -n "${DODOCK_APP_INIT}" ]; then
 
   # Dodock automatic app setup
-  if [ ! -f "${DODOCK_WD}/sites/.docker-app-init" ] || [[ "${DODOCK_REINSTALL_DATABASE}" == "1" ]]; then
+  if [ ! -f "${DODOCK_WD}/sites/.docker-app-init" ] || [[ "${DODOCK_REINSTALL_DATABASE}" = "1" ]]; then
 
     # Call bench setup for app
     log "Docker Dodock automatic app setup..."
     bench_setup "${DODOCK_APP_INIT}"
 
-    date +%Y-%m-%dT%H:%M:%S%:z > "${DODOCK_WD}/sites/.docker-app-init"
+    echo "[${WORKER_TYPE}] $(date +%Y-%m-%dT%H:%M:%S%:z)" > "${DODOCK_WD}/sites/.docker-app-init"
     log "Docker Dodock automatic app setup ended"
 
   else
@@ -728,7 +733,7 @@ if [ -n "${DODOCK_APP_INIT}" ]; then
     log "Docker Dodock automatic app update..."
     bench_install_apps "${DODOCK_APP_INIT}"
 
-    date +%Y-%m-%dT%H:%M:%S%:z > "${DODOCK_WD}/sites/.docker-app-init"
+    echo "[${WORKER_TYPE}] $(date +%Y-%m-%dT%H:%M:%S%:z)" > "${DODOCK_WD}/sites/.docker-app-init"
     log "Docker Dodock automatic app update ended"
 
   fi
@@ -739,7 +744,7 @@ if [ -n "${DODOCK_APP_INIT}" ]; then
     bench_build_apps
     bench_migrate
   fi
-  echo "${DOCKER_TAG} ${DOCKER_VCS_REF} ${DOCKER_BUILD_DATE}" > "${DODOCK_WD}/sites/.docker-init"
+  echo "[${WORKER_TYPE}] ${DOCKER_TAG} ${DOCKER_VCS_REF} ${DOCKER_BUILD_DATE}" > "${DODOCK_WD}/sites/.docker-init"
 
 fi
 
@@ -765,15 +770,15 @@ case "${1}" in
   start|app)
     log "Check Dodock app connection..."
     bench_cmd check_connection
-    if [[ ! -z "$AUTO_MIGRATE" ]]; then
+    if [[ -n "$AUTO_MIGRATE" ]]; then
       log "Dodock auto-migrate..."
       bench_cmd auto_migrate
     fi
     log "Starting Gunicorn server..."
-    gunicorn -b 0.0.0.0:$DODOCK_PORT \
+    gunicorn -b "0.0.0.0:$DODOCK_PORT" \
       --worker-tmp-dir /dev/shm \
       --threads=4 \
-      --workers $WORKERS \
+      --workers "$WORKERS" \
       --worker-class=gthread \
       --log-file=- \
       -t 120 frappe.app:application --preload

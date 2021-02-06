@@ -1,6 +1,6 @@
 ##
 ##    Docker image for Dodock applications.
-##    Copyright (C) 2020  Monogramm
+##    Copyright (C) 2021 Monogramm
 ##
 ##    This program is free software: you can redistribute it and/or modify
 ##    it under the terms of the GNU Affero General Public License as published
@@ -108,7 +108,7 @@ ENV PATH=/home/dodock/.local/bin:$PATH
 # Setup Bench and Dodock
 RUN set -ex; \
     echo "export PATH=/home/dodock/.local/bin:\$PATH" >> .bashrc; \
-    git clone https://gitlab.com/dokos/docli.git .bench; \
+    git clone 'https://gitlab.com/dokos/docli.git' .bench; \
     pip install --user -e .bench; \
     npm install \
         express \
@@ -122,7 +122,7 @@ RUN set -ex; \
     env/bin/pip install numpy==1.18.5; \
     mkdir -p config apps logs sites/assets sites/error; \
     cp /home/dodock/.bench/bench/config/templates/502.html sites/error/; \
-    install_app frappe https://gitlab.com/dokos/dodock ${DODOCK_BRANCH}; \
+    install_app frappe 'https://gitlab.com/dokos/dodock' "${DODOCK_BRANCH}"; \
     (cd apps/frappe && yarn && yarn run production && rm -rf node_modules); \
     (cd apps/frappe && yarn install --production=true && yarn add node-sass); \
     cp -R apps/frappe/frappe/public sites/assets/frappe; \

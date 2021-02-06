@@ -1,5 +1,5 @@
 [![License: AGPL v3][uri_license_image]][uri_license]
-[![Build Status](https://travis-ci.org/Monogramm/docker-dodock.svg)](https://travis-ci.org/Monogramm/docker-dodock)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Monogramm/docker-dodock/Docker%20Image%20CI)](https://github.com/Monogramm/docker-dodock/actions)
 [![Docker Automated buid](https://img.shields.io/docker/cloud/build/monogramm/docker-dodock.svg)](https://hub.docker.com/r/monogramm/docker-dodock/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/monogramm/docker-dodock.svg)](https://hub.docker.com/r/monogramm/docker-dodock/)
 [![](https://images.microbadger.com/badges/version/monogramm/docker-dodock.svg)](https://microbadger.com/images/monogramm/docker-dodock)
@@ -25,7 +25,7 @@ The concept is the following:
 
 Check image [Monogramm/docker-dokos](https://github.com/Monogramm/docker-dokos) to see how to expand this image and build dodock apps.
 
-## What is Dodock ?
+## What is Dodock
 
 Full-stack web application framework that uses Python and MariaDB on the server side and a tightly integrated client side library. Built for Dokos.
 
@@ -37,24 +37,24 @@ Full-stack web application framework that uses Python and MariaDB on the server 
 
 <https://hub.docker.com/r/monogramm/docker-dodock/>
 
--   Dodock develop branch
-    -   `develop-slim-buster` `develop`
-    -   `develop-alpine`
--   Dodock 1.5
-    -   `v1.5-slim-buster` `v1.5`
-    -   `v1.5-alpine`
--   Dodock 1.4
-    -   `v1.4-slim-buster` `v1.4`
-    -   `v1.4-alpine`
--   Dodock 1.3
-    -   `v1.3-slim-buster` `v1.3`
-    -   `v1.3-alpine`
+<!-- >Docker Tags -->
 
-# Auto configuration via environment variables
+-   v1.5.3-alpine3.12 v1.5-alpine3.12 -alpine3.12  (`images/v1.5/alpine3.12/Dockerfile`)
+-   v1.5.3-slim-buster v1.5-slim-buster -slim-buster v1.5.3 v1.5   (`images/v1.5/slim-buster/Dockerfile`)
+-   v1.4.9-alpine3.12 v1.4-alpine3.12 -alpine3.12  (`images/v1.4/alpine3.12/Dockerfile`)
+-   v1.4.9-slim-buster v1.4-slim-buster -slim-buster v1.4.9 v1.4   (`images/v1.4/slim-buster/Dockerfile`)
+-   v1.3.13-alpine3.12 v1.3-alpine3.12 -alpine3.12  (`images/v1.3/alpine3.12/Dockerfile`)
+-   v1.3.13-slim-buster v1.3-slim-buster -slim-buster v1.3.13 v1.3   (`images/v1.3/slim-buster/Dockerfile`)
+-   develop-alpine3.12  (`images/develop/alpine3.12/Dockerfile`)
+-   develop-slim-buster develop  (`images/develop/slim-buster/Dockerfile`)
+
+<!-- <Docker Tags -->
+
+## Auto configuration via environment variables
 
 The image supports auto configuration via environment variables.
 
-## Docker entrypoint configuration
+### Docker entrypoint configuration
 
 ```sh
 # The docker "node" type. Defines the behavior of the container.
@@ -107,7 +107,7 @@ DOCKER_GUNICORN_CERTFILE=
 DOCKER_GUNICORN_KEYFILE=
 ```
 
-## Dodock configuration
+### Dodock configuration
 
 ```sh
 # List of dodock apps (space separated) to init on startup (bench install-app)
@@ -163,7 +163,7 @@ ADMIN_PASSWORD=dodock
 ENCRYPTION_KEY=
 ```
 
-## Database configuration
+### Database configuration
 
 ```sh
 # DB type. Can either be mariadb or postgresql
@@ -183,7 +183,7 @@ DB_ROOT_LOGIN=root
 DB_ROOT_PASSWORD=mariadb_root_password
 ```
 
-## Mail configuration
+### Mail configuration
 
 ```sh
 MAIL_MUTED=false
@@ -194,7 +194,7 @@ MAIL_LOGIN=dodock-mail
 MAIL_PASSWORD=youshouldoverwritethis
 ```
 
-## Redis configuration
+### Redis configuration
 
 ```sh
 REDIS_CACHE_HOST=redis_cache
@@ -202,13 +202,13 @@ REDIS_QUEUE_HOST=redis_queue
 REDIS_SOCKETIO_HOST=redis_socketio
 ```
 
-## How to run this image ?
+## How to run this image
 
 This image does not contain the database for Dodock. You need to use either an existing database or a database container.
 
 This image is designed to be used in a micro-service environment using docker-compose. There are basically 2 variants of the image you can choose from: `alpine` or `debian`.
 
-## Running this image with docker-compose
+### Running this image with docker-compose
 
 -   Select the version closest to what you want in the images folder
     -   You can comment the `build` lines, uncomment the `image` lines and edit versions to download prebuilt docker container.
@@ -223,4 +223,3 @@ If you got any questions or problems using the image, please visit our [Github R
 [uri_license]: http://www.gnu.org/licenses/agpl.html
 
 [uri_license_image]: https://img.shields.io/badge/License-AGPL%20v3-blue.svg
-
