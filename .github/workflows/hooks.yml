@@ -2,6 +2,7 @@
 name: Docker Image CI
 
 on:
+  pull_request:
   push:
     branches:
       - master
@@ -12,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ['11', '12', '13']
-        variant: ['alpine', 'buster', 'slim-buster']
+        version: ['v1.3', 'v1.4', 'v1.5']
+        variant: ['alpine3.12', 'slim-buster']
 
     steps:
       - name: Check Out Repo
