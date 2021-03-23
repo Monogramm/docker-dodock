@@ -98,6 +98,7 @@ RUN set -ex; \
 
 # Copy config scripts
 COPY bin/install_app.sh /usr/local/bin/install_app
+COPY bin/healthcheck.sh /usr/local/bin/healthcheck
 COPY bin/bench /usr/local/bin/bench
 
 USER dodock
@@ -120,12 +121,12 @@ RUN set -ex; \
     cd dodock-bench; \
     python -m venv env; \
     env/bin/pip install numpy==1.18.5; \
-    mkdir -p config apps logs sites/assets sites/error; \
+    mkdir -p config apps logs sites/assets/css sites/assets/frappe sites/error; \
     cp /home/dodock/.bench/bench/config/templates/502.html sites/error/; \
     install_app frappe 'https://gitlab.com/dokos/dodock' "${DODOCK_BRANCH}"; \
     (cd apps/frappe && yarn && yarn run production); \
-    (cd apps/frappe && yarn install --production=true && yarn add node-sass); \
-    cp -R apps/frappe/frappe/public sites/assets/frappe; \
+    (cd apps/frappe && yarn install --production=true); \
+    cp -R apps/frappe/frappe/public/* sites/assets/frappe/; \
     cp -R apps/frappe/node_modules sites/assets/frappe/; \
     tar zcf sites-base.tgz sites; \
     rm -rf sites/* ~/.cache

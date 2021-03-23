@@ -789,6 +789,12 @@ case "${1}" in
     log "Dodock new database..."
     bench_cmd new "${@:2}"
     ;;
+  drop)
+    log "Check Dodock new database connection..."
+    bench_cmd check_connection
+    log "Dodock drop site..."
+    bench_cmd drop "${@:2}"
+    ;;
   worker*)
     log "Check Dodock worker connection..."
     bench_cmd check_connection
