@@ -121,6 +121,8 @@ ENV PATH=/home/dodock/.local/bin:$PATH
 RUN set -ex; \
     echo "export PATH=/home/dodock/.local/bin:\$PATH" >> .bashrc; \
     git clone 'https://gitlab.com/dokos/docli.git' .bench; \
+    sed -i -e 's/urllib3==.*/urllib3/' .bench/requirements.txt; \
+    pip install --user urllib3==1.25.11; \
     pip install --user -e .bench; \
     npm install \
         express \
@@ -134,8 +136,6 @@ RUN set -ex; \
     mkdir -p config apps logs sites/assets/css sites/assets/frappe sites/error; \
     cp /home/dodock/.bench/bench/config/templates/502.html sites/error/; \
     install_app frappe 'https://gitlab.com/dokos/dodock' "${DODOCK_BRANCH}"; \
-    (cd apps/frappe && yarn && yarn run production); \
-    (cd apps/frappe && yarn install --production=true); \
     cp -R apps/frappe/frappe/public/* sites/assets/frappe/; \
     cp -R apps/frappe/node_modules sites/assets/frappe/; \
     tar zcf sites-base.tgz sites; \
