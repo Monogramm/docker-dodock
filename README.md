@@ -39,14 +39,12 @@ Full-stack web application framework that uses Python and MariaDB on the server 
 
 <!-- >Docker Tags -->
 
--   v1.5.3-alpine3.12 v1.5-alpine3.12 -alpine3.12  (`images/v1.5/alpine3.12/Dockerfile`)
--   v1.5.3-slim-buster v1.5-slim-buster -slim-buster v1.5.3 v1.5   (`images/v1.5/slim-buster/Dockerfile`)
--   v1.4.9-alpine3.12 v1.4-alpine3.12 -alpine3.12  (`images/v1.4/alpine3.12/Dockerfile`)
--   v1.4.9-slim-buster v1.4-slim-buster -slim-buster v1.4.9 v1.4   (`images/v1.4/slim-buster/Dockerfile`)
--   v1.3.13-alpine3.12 v1.3-alpine3.12 -alpine3.12  (`images/v1.3/alpine3.12/Dockerfile`)
--   v1.3.13-slim-buster v1.3-slim-buster -slim-buster v1.3.13 v1.3   (`images/v1.3/slim-buster/Dockerfile`)
--   develop-alpine3.12  (`images/develop/alpine3.12/Dockerfile`)
--   develop-slim-buster develop  (`images/develop/slim-buster/Dockerfile`)
+-   v1.5.3-alpine3.12 v1.5-alpine3.12  (`images/v1.5/alpine3.12/Dockerfile`)
+-   v1.5.3-slim-buster v1.5-slim-buster v1.5.3 v1.5  (`images/v1.5/slim-buster/Dockerfile`)
+-   v1.4.9-alpine3.12 v1.4-alpine3.12  (`images/v1.4/alpine3.12/Dockerfile`)
+-   v1.4.9-slim-buster v1.4-slim-buster v1.4.9 v1.4  (`images/v1.4/slim-buster/Dockerfile`)
+-   develop-alpine3.12 develop-alpine3.12 alpine3.12  (`images/develop/alpine3.12/Dockerfile`)
+-   develop-slim-buster develop-slim-buster slim-buster develop develop latest  (`images/develop/slim-buster/Dockerfile`)
 
 <!-- <Docker Tags -->
 
