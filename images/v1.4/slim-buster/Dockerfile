@@ -143,7 +143,7 @@ RUN set -ex; \
 
 # Copy dokos commands
 COPY --chown=dodock:dodock commands /home/dodock/dodock-bench/commands/
-COPY --chown=dodock:dodock socketio/* /home/dodock/dodock-bench/apps/frappe/
+#COPY --chown=dodock:dodock socketio/* /home/dodock/dodock-bench/apps/frappe/
 #ADD "https://gitlab.com/dokos/dodock/-/raw/$DODOCK_BRANCH/socketio.js" /home/dodock/dodock-bench/apps/frappe/socketio.js
 #ADD "https://gitlab.com/dokos/dodock/-/raw/$DODOCK_BRANCH/node_utils.js" /home/dodock/dodock-bench/apps/frappe/node_utils.js
 

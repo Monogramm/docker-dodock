@@ -17,10 +17,6 @@ sed -i -e 's/urllib3==.*/urllib3/' "${APP_NAME}/requirements.txt"
 grep 'ldap3' "${APP_NAME}/requirements.txt" || echo -e '\nldap3==2.7' >> "${APP_NAME}/requirements.txt";
 pip3 install --no-cache-dir -e "/home/dodock/dodock-bench/apps/${APP_NAME}"
 cd ${APP_NAME}
-cat package.json
 yarn
-cat package.json
 yarn run production
-cat package.json
 yarn install --production=true
-cat package.json
