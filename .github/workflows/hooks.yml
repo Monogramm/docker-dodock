@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ['v1.3', 'v1.4', 'v1.5']
+        version: ['v1.4', 'v1.5', 'develop']
         variant: ['alpine3.12', 'slim-buster']
 
     steps:
