@@ -125,6 +125,18 @@ RUN set -ex; \
     pip install --user urllib3==1.25.11; \
     pip install --user -e .bench; \
     npm install \
+        chalk \
+        rollup \
+        rollup-plugin-multi-entry \
+        rollup-plugin-commonjs \
+        rollup-plugin-node-resolve \
+        rollup-plugin-uglify \
+        rollup-plugin-postcss \
+        rollup-plugin-buble \
+        rollup-plugin-terser \
+        rollup-plugin-vue \
+        vue-template-compiler \
+        moment \
         express \
         socket.io \
         superagent \
