@@ -110,7 +110,8 @@ ENV PATH=/home/dodock/.local/bin:$PATH
 RUN set -ex; \
     echo "export PATH=/home/dodock/.local/bin:\$PATH" >> .bashrc; \
     git clone 'https://gitlab.com/dokos/docli.git' .bench; \
-    pip install --user urllib3==1.25.11; \
+    sed -i -e 's/urllib3==.*/urllib3==1.25.10/' .bench/requirements.txt; \
+    pip install --user urllib3==1.25.10; \
     pip install --user -e .bench; \
     npm install \
         chalk \
