@@ -110,10 +110,24 @@ ENV PATH=/home/dodock/.local/bin:$PATH
 RUN set -ex; \
     echo "export PATH=/home/dodock/.local/bin:\$PATH" >> .bashrc; \
     git clone 'https://gitlab.com/dokos/docli.git' .bench; \
-    sed -i -e 's/urllib3==.*/urllib3/' .bench/requirements.txt; \
-    pip install --user urllib3==1.25.11; \
+    sed -i -e 's/urllib3==.*/urllib3==1.25.10/' .bench/requirements.txt; \
+    pip install --user urllib3==1.25.10; \
     pip install --user -e .bench; \
     npm install \
+        chalk \
+        rollup \
+        @rollup/plugin-multi-entry \
+        @rollup/plugin-commonjs \
+        @rollup/plugin-node-resolve \
+        rollup-plugin-uglify \
+        rollup-plugin-postcss \
+        @rollup/plugin-buble \
+        rollup-plugin-terser \
+        @rollup/plugin-replace \
+        rollup-plugin-vue \
+        vue-template-compiler \
+        @vue/compiler-sfc \
+        moment \
         express \
         socket.io \
         superagent \
