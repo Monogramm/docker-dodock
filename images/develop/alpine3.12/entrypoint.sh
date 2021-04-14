@@ -532,7 +532,8 @@ if [[ "${DODOCK_RESET_SITES}" = "1" ]]; then
    rm sites/.docker*)
 fi
 
-if [ ! -d "${DODOCK_WD}/sites/assets/frappe" ]; then
+# FIXME This hack that we need to remove at some point
+if [ ! -d "${DODOCK_WD}/sites/assets/frappe/node_modules" ]; then
   log "Restoring apps assets to site from archive..."
   (cd "${DODOCK_WD}"
    tar zxf sites-base.tgz)
