@@ -17,7 +17,7 @@
 ##
 FROM madnight/alpine-wkhtmltopdf-builder:0.12.5-alpine3.10-745686742 AS wkhtmltopdf-builder
 
-FROM python:3.7-alpine3.12
+FROM python:3.10.0b2-alpine3.12
 
 ARG VERSION=develop
 
